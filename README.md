@@ -29,7 +29,7 @@ DeltaFlow-Engine/
 
 ## 👨‍💻 Author
 **Mohamed Khaled Ghanem**  
-*Developer, Data Analyst & AI Researcher*  
+*Developer, Data Scientist & AI Researcher*  
 * 📧 **Email:** [mohammedkhaledfarag@gmail.com](mailto:mohammedkhaledfarag@gmail.com)
 * 💼 **LinkedIn:** [linkedin.com/in/mohamedkhaledghanem](https://www.linkedin.com/in/mohamedkhaledghanem/)
 
