@@ -25,3 +25,14 @@ DeltaFlow-Engine/
 ├── output_SRTMGL1.tif           # Raw SRTM DEM raster data for El-Hamoul
 ├── POWER_Climatic_...xlsx       # NASA POWER climatological dataset
 └── README.md                    # Project documentation****
+
+---
+
+## 👨‍💻 Author
+**Mohamed Khaled Ghanem**  
+*Developer, Data Analyst & AI Researcher*  
+* 📧 **Email:** [mohammedkhaledfarag@gmail.com](mailto:mohammedkhaledfarag@gmail.com)
+* 💼 **LinkedIn:** [linkedin.com/in/mohamedkhaledghanem](https://www.linkedin.com/in/mohamedkhaledghanem/)
+
+## 📄 License
+This project is open-source and available under the [MIT License](LICENSE).
