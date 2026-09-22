@@ -24,7 +24,6 @@ st.markdown("""
         color: #EDEDEF;
     }
 
-    /* Base Styling & Smooth Dark Aesthetic */
     .stApp {
         background: radial-gradient(ellipse at top, #0a0a0f 0%, #050506 50%, #020203 100%);
     }
@@ -36,13 +35,11 @@ st.markdown("""
         color: #EDEDEF;
     }
 
-    /* Sidebar Styling */
     [data-testid="stSidebar"] {
         background-color: #0a0a0c;
         border-right: 1px solid rgba(255, 255, 255, 0.06);
     }
 
-    /* Buttons */
     .stButton > button {
         background-color: #5E6AD2;
         color: #FFFFFF;
@@ -58,7 +55,6 @@ st.markdown("""
         box-shadow: 0 0 0 1px rgba(104, 114, 217, 0.8), 0 8px 24px rgba(94, 106, 210, 0.4);
     }
 
-    /* Metrics Cards */
     [data-testid="stMetric"] {
         background: rgba(255, 255, 255, 0.03);
         border: 1px solid rgba(255, 255, 255, 0.06);
@@ -80,7 +76,6 @@ st.markdown("""
         color: #EDEDEF !important;
     }
 
-    /* Horizontal Dividers */
     hr {
         border: none;
         border-top: 1px solid rgba(255, 255, 255, 0.06);
@@ -89,35 +84,40 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Header Section
+# Header Section with Copyright & Author Link right under title
 st.markdown("<p style='font-family: \"JetBrains Mono\", monospace; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: #5E6AD2; margin-bottom: 0.5rem;'>// SYSTEM MONOGRAPH 2026</p>", unsafe_allow_html=True)
-st.markdown("<h1 style='font-size: 3.5rem; font-weight: 700; background: linear-gradient(to bottom, #FFFFFF 0%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.6) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>DeltaFlow-Engine</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='font-size: 3.5rem; font-weight: 700; background: linear-gradient(to bottom, #FFFFFF 0%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.6) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.25rem;'>DeltaFlow-Engine</h1>", unsafe_allow_html=True)
+st.markdown("<p style='font-family: \"JetBrains Mono\", monospace; font-size: 0.85rem; color: #8A8F98; margin-bottom: 1rem;'>© 2026 // Developed by <a href='https://github.com/mooghanem' target='_blank' style='color: #5E6AD2; text-decoration: underline;'>Mohamed Ghanem</a></p>", unsafe_allow_html=True)
 st.markdown("<p style='font-size: 1.15rem; color: #8A8F98; margin-bottom: 2rem;'>Matrix-Based Gravitational Runoff & Spatial Drainage Optimization</p>", unsafe_allow_html=True)
 
 st.markdown("<hr>", unsafe_allow_html=True)
 
-# Sidebar Controls
+# Sidebar Controls (Rainfall manual slider removed, extracted automatically from file)
 st.sidebar.header("Parameters & Feed")
 uploaded_file = st.sidebar.file_uploader("Upload DEM (.tif) or Dataset (.csv, .xlsx)", type=["tif", "tiff", "csv", "xlsx"])
 
-# Extract dynamic default rainfall if file uploaded
-default_rainfall = 18.5
+# Automatically extract rainfall intensity from uploaded file
+extracted_rainfall = 18.5
 if uploaded_file is not None:
     fname = uploaded_file.name.lower()
-    if fname.endswith(('.xls', '.xlsx', '.csv')):
-        try:
-            if fname.endswith('.csv'):
-                df = pd.read_csv(uploaded_file)
-            else:
-                df = pd.read_excel(uploaded_file)
+    try:
+        if fname.endswith('.csv'):
+            df = pd.read_csv(uploaded_file)
+        elif fname.endswith(('.xls', '.xlsx')):
+            df = pd.read_excel(uploaded_file)
+        else:
+            df = None
+            
+        if df is not None:
             if df.shape[0] > 2 and df.shape[1] > 218:
                 val = float(df.iloc[2, 218])
                 if not np.isnan(val) and val > 0:
-                    default_rainfall = val
-        except Exception:
-            pass
+                    extracted_rainfall = val
+    except Exception:
+        pass
 
-rainfall_input = st.sidebar.slider("Rainfall Intensity (mm/day)", min_value=1.0, max_value=100.0, value=float(default_rainfall), step=0.5)
+st.sidebar.markdown(f"**Extracted Rainfall Intensity:** `{extracted_rainfall:.2f} mm/day` *(Loaded directly from dataset)*")
+
 sim_steps = st.sidebar.slider("Simulation Iterations", min_value=10, max_value=150, value=50, step=5)
 percentile_factor = st.sidebar.slider("Hazard Risk Threshold", min_value=0.50, max_value=0.95, value=0.55, step=0.05)
 grid_size = st.sidebar.slider("Grid Matrix Resolution", min_value=40, max_value=200, value=100, step=10)
@@ -173,7 +173,7 @@ elevation_grid, custom_coords = load_data(grid_size, uploaded_file)
 
 # Run Simulation
 rows, cols = elevation_grid.shape
-water = np.ones((rows, cols)) * (rainfall_input / 10.0)
+water = np.ones((rows, cols)) * (extracted_rainfall / 10.0)
 for _ in range(sim_steps):
     dy, dx = np.gradient(elevation_grid + water)
     flow_x = -dx * 0.18
@@ -181,7 +181,7 @@ for _ in range(sim_steps):
     divergence = np.gradient(flow_x, axis=1) + np.gradient(flow_y, axis=0)
     water -= divergence * 0.5
     water = np.clip(water, 0.0, None)
-    water += (rainfall_input / 100.0)
+    water += (extracted_rainfall / 100.0)
 
 min_w, max_w = np.min(water), np.max(water)
 threshold = min_w + percentile_factor * (max_w - min_w)
@@ -195,14 +195,14 @@ extracted_lon = base_lon + ((max_water_idx[1] - (cols / 2.0)) * 0.0005)
 
 # Metrics Grid
 col1, col2, col3, col4 = st.columns(4)
-col1.metric("PRECIPITATION INPUT", f"{rainfall_input:.1f} MM")
+col1.metric("PRECIPITATION INPUT", f"{extracted_rainfall:.1f} MM")
 col2.metric("PEAK ACCUMULATION", f"{np.max(water):.1f} MM")
 col3.metric("CRITICAL THRESHOLD", f"{threshold:.1f} MM")
 col4.metric("HIGH-RISK CELLS", f"{total_danger_cells}")
 
 st.markdown("<hr>", unsafe_allow_html=True)
 
-# Standard Matplotlib Visualizations with Dark Glass Styling
+# Standard Matplotlib Visualizations with Safe Spines
 st.subheader("Simulation Visualizations")
 fig, axes = plt.subplots(1, 3, figsize=(18, 5), facecolor='#0a0a0c')
 
@@ -210,7 +210,7 @@ for ax in axes:
     ax.set_facecolor('#0a0a0c')
     ax.tick_params(colors='#8A8F98')
     for spine in ax.spines.values():
-        spine.set_edgecolor('rgba(255,255,255,0.1)')
+        spine.set_color('#8A8F98')
 
 im0 = axes[0].imshow(elevation_grid, cmap='terrain', origin='lower')
 axes[0].set_title("1. Elevation Topography", color='#EDEDEF', fontdict={'family': 'sans-serif', 'weight': '600'})
