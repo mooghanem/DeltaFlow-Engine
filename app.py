@@ -6,16 +6,99 @@ from PIL import Image
 import os
 from scipy.ndimage import zoom
 
-st.set_page_config(page_title="DeltaFlow-Engine | Global DEM Simulator", page_icon="🌊", layout="wide")
+# Page Configuration
+st.set_page_config(
+    page_title="DeltaFlow-Engine | Global DEM Simulator",
+    page_icon="▪️",
+    layout="wide"
+)
 
-st.title("🌊 DeltaFlow-Engine: Universal Elevation & Urban Flood Simulation Engine")
-st.markdown("**Core Architecture:** Matrix-Based Gravitational Runoff & Spatial Drainage Optimization (Supports Any Global Terrain DEM)")
+# Minimalist Monochrome Custom CSS Injection
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Source Serif 4', Georgia, serif;
+        background-color: #FFFFFF;
+        color: #000000;
+        border-radius: 0px !important;
+    }
+
+    /* Force zero border radius everywhere */
+    * {
+        border-radius: 0px !important;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+        color: #000000;
+    }
+
+    /* Sidebar Styling */
+    [data-testid="stSidebar"] {
+        background-color: #F5F5F5;
+        border-right: 1px solid #000000;
+    }
+
+    /* Buttons */
+    .stButton > button {
+        background-color: #000000;
+        color: #FFFFFF;
+        border: none;
+        padding: 0.75rem 2rem;
+        font-family: 'JetBrains Mono', monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 500;
+        transition: background-color 100ms ease, color 100ms ease;
+    }
+    .stButton > button:hover {
+        background-color: #FFFFFF;
+        color: #000000;
+        border: 2px solid #000000;
+    }
+
+    /* Metrics */
+    [data-testid="stMetric"] {
+        border: 1px solid #000000;
+        padding: 1.25rem;
+        background-color: #FFFFFF;
+    }
+    [data-testid="stMetricLabel"] {
+        font-family: 'JetBrains Mono', monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 0.75rem !important;
+        color: #525252 !important;
+    }
+    [data-testid="stMetricValue"] {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-weight: 700;
+        color: #000000 !important;
+    }
+
+    /* Horizontal Rules */
+    hr {
+        border: none;
+        border-top: 4px solid #000000;
+        margin: 3rem 0;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# App Header
+st.markdown("<p style='font-family: \"JetBrains Mono\", monospace; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: #525252;'>System Monograph // 2026</p>", unsafe_allow_html=True)
+st.title("DeltaFlow-Engine")
+st.markdown("<p style='font-size: 1.25rem; font-style: italic; margin-bottom: 2rem;'>A Matrix-Based Universal Elevation & Urban Flood Simulation Engine</p>", unsafe_allow_html=True)
+
+st.markdown("<hr>", unsafe_allow_html=True)
 
 # Sidebar Parameters & DEM Input
-st.sidebar.header("🎛️ Simulation Parameters & DEM Input")
-
-# Upload any global DEM file
-uploaded_file = st.sidebar.file_uploader("Upload Any Global DEM (.tif, .tiff)", type=["tif", "tiff"])
+st.sidebar.header("Simulation Parameters")
+uploaded_file = st.sidebar.file_uploader("Upload Global DEM (.tif, .tiff)", type=["tif", "tiff"])
 
 rainfall_input = st.sidebar.slider("Rainfall Intensity (mm/day)", min_value=1.0, max_value=100.0, value=15.0, step=0.5)
 sim_steps = st.sidebar.slider("Simulation Steps", min_value=10, max_value=120, value=40, step=5)
@@ -79,35 +162,53 @@ extracted_lon = base_lon + ((max_water_idx[1] - (cols / 2.0)) * 0.0005)
 
 # Metrics display
 col1, col2, col3, col4 = st.columns(4)
-col1.metric("🌧️ Rainfall Input", f"{rainfall_input:.1f} mm/day")
-col2.metric("💧 Max Water Accumulation", f"{np.max(water):.1f} mm")
-col3.metric("⚠️ Critical Threshold", f"{threshold:.1f} mm")
-col4.metric("🚨 High-Risk Cells", f"{total_danger_cells}")
+col1.metric("Rainfall Input", f"{rainfall_input:.1f} mm/day")
+col2.metric("Max Water Accum.", f"{np.max(water):.1f} mm")
+col3.metric("Critical Threshold", f"{threshold:.1f} mm")
+col4.metric("High-Risk Cells", f"{total_danger_cells}")
 
-st.markdown("---")
+st.markdown("<hr>", unsafe_allow_html=True)
 
 # Visualizations
-st.subheader("📊 Universal Multi-Panel Scientific Visualizations")
-fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+st.subheader("Simulation Visualizations")
+fig, axes = plt.subplots(1, 3, figsize=(18, 6), facecolor='#FFFFFF')
 
-im0 = axes[0].imshow(elevation_grid, cmap='terrain', origin='lower')
-axes[0].set_title("1. Elevation Topography")
+for ax in axes:
+    ax.set_facecolor('#FFFFFF')
+
+im0 = axes[0].imshow(elevation_grid, cmap='gray', origin='lower')
+axes[0].set_title("1. Elevation Topography", fontdict={'family': 'serif', 'weight': 'bold'})
 fig.colorbar(im0, ax=axes[0], label='Elevation (m)')
 
-im1 = axes[1].imshow(water, cmap='Blues', origin='lower')
-axes[1].set_title("2. Computed Runoff Heatmap")
+im1 = axes[1].imshow(water, cmap='gray', origin='lower')
+axes[1].set_title("2. Computed Runoff Heatmap", fontdict={'family': 'serif', 'weight': 'bold'})
 fig.colorbar(im1, ax=axes[1], label='Water Depth (mm)')
 
-im2 = axes[2].imshow(danger_map, cmap='Reds', origin='lower')
-axes[2].set_title("3. Dynamic Hazard Zones")
+im2 = axes[2].imshow(danger_map, cmap='gray', origin='lower')
+axes[2].set_title("3. Dynamic Hazard Zones", fontdict={'family': 'serif', 'weight': 'bold'})
 fig.colorbar(im2, ax=axes[2], label='1 = Danger / 0 = Safe')
 
 plt.tight_layout()
 st.pyplot(fig)
 
-st.markdown("---")
+st.markdown("<hr>", unsafe_allow_html=True)
 
 # GIS & Google Maps integration
-st.subheader("🌍 Dynamic Spatial Georeferencing & Google Maps Integration")
+st.subheader("Spatial Georeferencing & Navigation")
 gmaps_link = f"https://www.google.com/maps/search/?api=1&query={extracted_lat:.6f},{extracted_lon:.6f}"
-st.success(f"✅ **Universal Terrain Matrix Processed Successfully!**  \n* **Active Grid Index (Y, X):** {max_water_idx}  \n* **Dynamic Extracted Coordinates:** {extracted_lat:.4f}° N, {extracted_lon:.4f}° E  \n🔗 [Open Target Zone in Google Maps]({gmaps_link})")
+st.markdown(f"""
+<div style="border: 2px solid #000000; padding: 1.5rem; background-color: #FFFFFF;">
+    <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; text-transform: uppercase; margin-bottom: 0.5rem;"><strong>Active Grid Index (Y, X):</strong> {max_water_idx}</p>
+    <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; text-transform: uppercase; margin-bottom: 1rem;"><strong>Extracted GPS Coordinates:</strong> {extracted_lat:.4f}° N, {extracted_lon:.4f}° E</p>
+    <a href="{gmaps_link}" target="_blank" style="font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; text-transform: uppercase; text-decoration: underline; color: #000000; font-weight: 700;">Open Target Zone in Google Maps →</a>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("<hr>", unsafe_allow_html=True)
+
+# Footer conforming strictly to Minimalist Monochrome design & user request
+st.markdown("""
+<div style="text-align: center; padding: 2rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: #525252;">
+    © 2026 Made by <a href="https://github.com/mooghanem" target="_blank" style="color: #000000; text-decoration: underline; font-weight: 700;">Mohamed Ghanem</a>. All rights reserved.
+</div>
+""", unsafe_allow_html=True)
